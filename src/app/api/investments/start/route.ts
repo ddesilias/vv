@@ -60,7 +60,6 @@ function getClientIp(request: Request) {
 
 function getAppOrigin(request: Request) {
   return (
-    process.env.NEXT_PUBLIC_APP_URL ||
     process.env.APP_URL ||
     new URL(request.url).origin
   ).replace(/\/+$/, '')

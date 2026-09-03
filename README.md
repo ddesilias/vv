@@ -32,7 +32,7 @@ alors que ce flux a besoin des champs MonCash complets : `gdes`, `userID`,
 Copier `.env.example` vers `.env.local`, puis renseigner les cles Bazik :
 
 ```bash
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+APP_URL=http://localhost:3000
 BAZIK_API_URL=https://api.bazik.io
 BAZIK_USER_ID=
 BAZIK_SECRET_KEY=
