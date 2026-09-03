@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { neon } from '@neondatabase/serverless'
 import { promises as fs } from 'fs'
 import path from 'path'
 
@@ -67,6 +68,9 @@ type InvestmentStore = {
 
 const DATA_DIR = path.join(process.cwd(), 'data')
 const STORE_PATH = path.join(DATA_DIR, 'investments.json')
+const databaseUrl = process.env.DATABASE_URL
+const sql = databaseUrl ? neon(databaseUrl) : null
+let databaseReady: Promise<void> | null = null
 
 export const SOURCE_PDF = {
   fileName: 'Consentement_Investissement_VV_Society.pdf',
@@ -97,6 +101,82 @@ async function writeStore(store: InvestmentStore) {
   await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2))
 }
 
+async function ensureDatabase() {
+  if (!sql) {
+    throw new Error(
+      'DATABASE_URL is required in deployed environments to store investments.'
+    )
+  }
+
+  if (!databaseReady) {
+    databaseReady = sql`
+      CREATE TABLE IF NOT EXISTS investments (
+        id TEXT PRIMARY KEY,
+        reference_id TEXT NOT NULL UNIQUE,
+        order_id TEXT,
+        payload JSONB NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `.then(() => undefined)
+  }
+
+  await databaseReady
+}
+
+async function insertDatabaseInvestment(investment: Investment) {
+  await ensureDatabase()
+  await sql!`
+    INSERT INTO investments (id, reference_id, order_id, payload, created_at, updated_at)
+    VALUES (
+      ${investment.id},
+      ${investment.referenceId},
+      ${investment.payment.orderId || null},
+      ${JSON.stringify(investment)}::jsonb,
+      ${investment.createdAt},
+      ${investment.updatedAt}
+    )
+  `
+}
+
+async function getDatabaseInvestment(id: string) {
+  await ensureDatabase()
+  const rows = await sql!`
+    SELECT payload FROM investments WHERE id = ${id} LIMIT 1
+  `
+
+  return (rows[0]?.payload as Investment | undefined) || null
+}
+
+async function updateDatabaseInvestment(investment: Investment) {
+  await ensureDatabase()
+  await sql!`
+    UPDATE investments
+    SET reference_id = ${investment.referenceId},
+        order_id = ${investment.payment.orderId || null},
+        payload = ${JSON.stringify(investment)}::jsonb,
+        updated_at = ${investment.updatedAt}
+    WHERE id = ${investment.id}
+  `
+}
+
+async function findDatabaseInvestmentByField(
+  field: 'order_id' | 'reference_id',
+  value: string
+) {
+  await ensureDatabase()
+  const rows =
+    field === 'order_id'
+      ? await sql!`
+          SELECT payload FROM investments WHERE order_id = ${value} LIMIT 1
+        `
+      : await sql!`
+          SELECT payload FROM investments WHERE reference_id = ${value} LIMIT 1
+        `
+
+  return (rows[0]?.payload as Investment | undefined) || null
+}
+
 export function createInvestmentEvent(
   type: string,
   message: string,
@@ -124,19 +204,31 @@ export async function createInvestment(
     ]
   }
 
-  const store = await readStore()
-  store.investments.unshift(investment)
-  await writeStore(store)
+  if (sql) {
+    await insertDatabaseInvestment(investment)
+  } else {
+    const store = await readStore()
+    store.investments.unshift(investment)
+    await writeStore(store)
+  }
 
   return investment
 }
 
 export async function getInvestment(id: string) {
+  if (sql) {
+    return getDatabaseInvestment(id)
+  }
+
   const store = await readStore()
   return store.investments.find(investment => investment.id === id) || null
 }
 
 export async function findInvestmentByOrderId(orderId: string) {
+  if (sql) {
+    return findDatabaseInvestmentByField('order_id', orderId)
+  }
+
   const store = await readStore()
 
   return (
@@ -147,6 +239,10 @@ export async function findInvestmentByOrderId(orderId: string) {
 }
 
 export async function findInvestmentByReferenceId(referenceId: string) {
+  if (sql) {
+    return findDatabaseInvestmentByField('reference_id', referenceId)
+  }
+
   const store = await readStore()
 
   return (
@@ -160,6 +256,22 @@ export async function updateInvestment(
   id: string,
   updater: (investment: Investment) => Investment
 ) {
+  if (sql) {
+    const investment = await getDatabaseInvestment(id)
+
+    if (!investment) {
+      return null
+    }
+
+    const updated = updater({
+      ...investment,
+      updatedAt: new Date().toISOString()
+    })
+
+    await updateDatabaseInvestment(updated)
+    return updated
+  }
+
   const store = await readStore()
   const index = store.investments.findIndex(investment => investment.id === id)
 

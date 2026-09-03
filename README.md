@@ -15,11 +15,13 @@ Application Next.js pour le portail investisseur V&V Society :
 - Next.js 14 App Router
 - Tailwind CSS
 - API Routes Next.js en runtime Node.js
-- Stockage JSON local pour le prototype
+- PostgreSQL Neon pour les donnees persistantes en production
 - Client HTTP serveur vers `https://api.bazik.io`
 
-Le stockage local est dans `data/investments.json`. Ce fichier est ignore par
-Git, car il peut contenir des donnees personnelles et des signatures.
+En developpement local, l'application utilise `data/investments.json` si
+`DATABASE_URL` n'est pas configure. En production Vercel, `DATABASE_URL` est
+obligatoire : le stockage local Vercel est en lecture seule et les donnees
+doivent rester dans PostgreSQL.
 
 Le SDK `@bazik/sdk` n'est pas utilise dans cette version. La doc JavaScript
 actuelle ne documente que `payments.create({ amount, currency, customer })`,
@@ -33,6 +35,7 @@ Copier `.env.example` vers `.env.local`, puis renseigner les cles Bazik :
 
 ```bash
 APP_URL=http://localhost:3000
+DATABASE_URL=
 BAZIK_API_URL=https://api.bazik.io
 BAZIK_USER_ID=
 BAZIK_SECRET_KEY=
@@ -65,9 +68,9 @@ npm run build
 
 ## Notes de production
 
-Pour une mise en production, remplacer le stockage JSON par une base de donnees
-durable, par exemple Postgres ou Supabase. Les webhooks Bazik doivent pointer
-vers l'URL publique HTTPS de production.
+Pour deployer sur Vercel, creer une base PostgreSQL Neon, ajouter `DATABASE_URL`
+dans les variables d'environnement Vercel, puis redeployer. Les webhooks Bazik
+doivent pointer vers l'URL publique HTTPS de production.
 
 Points deja couverts par l'integration :
 
