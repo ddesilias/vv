@@ -6,7 +6,7 @@ import { localePrefix } from './navigation'
 type CustomMiddleware = (req: NextRequest) => Promise<NextRequest>
 const customMiddleware: CustomMiddleware = async req => {
   console.log('Custom middleware executed before next-intl')
-  return req
+  return req   
 }
 
 const intlMiddleware = createMiddleware({
