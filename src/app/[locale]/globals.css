@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #0f172a;
+    --secondary: #238dca;
+    --background: #f7f8fb;
+    --background-secondary: #ffffff;
+    --button: #35aeef;
+    --button-text: #fff;
+    --text-secondary: #475569;
+    --dropdown: #ffffff;
+    --dropdown-hover: #eef2f7;
+    --button-secondary: #ffd84d;
+    --selected: #eaf7ff;
+    --logo-shadow: #ffd84d;
+    --logo-body: #35aeef;
+    --span-bg: linear-gradient(to right, #35aeef, #ffd84d);
+  }
+  .dark {
+    --primary: #f8fafc;
+    --secondary: #73c9f6;
+    --background: #111827;
+    --background-secondary: #1f2937;
+    --button: #35aeef;
+    --button-text: #fff;
+    --text-secondary: #cbd5e1;
+    --dropdown: #1f2937;
+    --dropdown-hover: #374151;
+    --button-secondary: #ffd84d;
+    --selected: #1f629a;
+    --logo-shadow: #ffd84d;
+    --logo-body: #73c9f6;
+    --span-bg: linear-gradient(to right, #73c9f6, #ffd84d);
+  }
+}
+
+@layer base {
+  div::selection,
+  h1::selection,
+  button::selection,
+  p::selection,
+  span::selection,
+  a::selection,
+  h2::selection {
+    background-color: #eaf7ff;
+    color: #0f172a;
+  }
+  body {
+    @apply bg-background text-primary;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    min-height: 100vh;
+    text-rendering: optimizeLegibility;
+  }
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+  }
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+  :focus-visible {
+    outline: 2px solid #35aeef;
+    outline-offset: 2px;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+}
