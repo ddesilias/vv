@@ -56,7 +56,8 @@ const landingCopy = {
       }
     ],
     servicesEyebrow: 'Services',
-    servicesTitle: 'Une entreprise pensée pour gérer, construire et accompagner.',
+    servicesTitle:
+      'Une entreprise pensée pour gérer, construire et accompagner.',
     servicesText:
       'V&V Society agit sur quatre axes: gestion des actifs, construction, vente de produits et conseil. Le but est clair: améliorer les conditions de vie en créant des solutions économiques viables.',
     services: [
@@ -119,9 +120,9 @@ const landingCopy = {
   },
   ht: {
     brandLong: 'V&V Society',
-    heroImage: '/images/vv-society-marketing.png',
-    spotlightImage: '/images/vv-society-marketing.png',
-    spotlightAlt: 'Afich V&V Society an kreyòl ayisyen',
+    heroImage: '/images/vv-business-card.png',
+    spotlightImage: '/images/vv-business-card.png',
+    spotlightAlt: 'Imaj prezantasyon V&V Society',
     heroTitle: 'V&V Society',
     heroText:
       'Jesyon byen, konstriksyon, acha ak vant pwodwi, ansanm ak akonpayman antrepriz pou bati solisyon solid ann Ayiti.',
